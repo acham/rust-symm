@@ -1,0 +1,11 @@
+[package]
+name = "lines-of-symmetry"
+version = "0.1.0"
+edition = "2021"
+description = "A library for finding lines of symmetry in 2D point sets"
+authors = ["Alexis Champsaur"]
+license = "MIT"
+repository = "https://github.com/acham/lines-of-symmetry"
+readme = "README.md"
+
+[dependencies]
