@@ -1,6 +1,6 @@
 # Cartesian Symmetry
 
-A Rust library for exploring symmetry in 2D space  
+A Rust library for exploring symmetry in 2D space 
 with tolerance intervals for floating-point comparisons.
 
 ## Usage
