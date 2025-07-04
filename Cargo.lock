@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "lines-of-symmetry"
+name = "rust-symm"
 version = "0.1.0"

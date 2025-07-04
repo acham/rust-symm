@@ -9,7 +9,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-lines-of-symmetry = "0.1"
+rust-symm = "0.1"
 ```
 
 See `main.rs` for example usage.

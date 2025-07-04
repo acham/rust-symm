@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use lines_of_symmetry::{alg::get_lines_of_sym, model::Point};
+use rust_symm::{alg::get_lines_of_sym, model::Point};
 
 fn main() {
     let test_cases = vec![
