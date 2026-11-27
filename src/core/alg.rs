@@ -50,9 +50,6 @@ pub fn get_lines_of_sym(points: &HashSet<Point>, high_degree_expected: Option<bo
     // A reusable map to track reflections of points across the candidate lines.
     let mut point_reflections: HashMap<&Point, &Point> = HashMap::new();
 
-    // A flag to indicate whether a line that goes through all points is possible.
-    let mut through_line_possible = true;
-
     while let Some(e_pair) = e_line_generators.iter().next().cloned() {
         // Generate candidate line
         let e_line = get_equidistant_line(&e_pair.p1, &e_pair.p2);
@@ -110,10 +107,6 @@ pub fn get_lines_of_sym(points: &HashSet<Point>, high_degree_expected: Option<bo
         }
 
         if valid_line {
-            if through_line_possible {
-                through_line_possible = false;
-            }
-
             if !lines_set.contains(&e_line) {
                 lines_set.insert(e_line);
             }
@@ -123,7 +116,7 @@ pub fn get_lines_of_sym(points: &HashSet<Point>, high_degree_expected: Option<bo
     }
 
     /* Only possible missing line of symmetry: a line that goes through all the points. */
-    if through_line_possible && points_vec.len() >= 2 {
+    if points_vec.len() >= 2 {
         let p1 = points_vec[0];
         let p2 = points_vec[1];
         let through_line = get_through_line(p1, p2);
