@@ -157,7 +157,9 @@ pub fn get_equidistant_line(p1: &Point, p2: &Point) -> Line {
     // Returns a line that is equidistant from p1 and p2
     let a = p2.x - p1.x;
     let b = p2.y - p1.y;
-    let c = 0.5 * (p1.x.powf(2.0) + p1.y.powf(2.0) - p2.x.powf(2.0) - p2.y.powf(2.0));
+    // The line passes through the midpoint. Computing c from it avoids subtracting
+    // large squares, which loses precision for points far from the origin.
+    let c = -(a * 0.5 * (p1.x + p2.x) + b * 0.5 * (p1.y + p2.y));
 
     Line::new(a, b, c)
 }
