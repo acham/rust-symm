@@ -1,3 +1,4 @@
+use crate::config;
 use crate::model::{Line, Point, UnorderedPointPair};
 use std::collections::{HashMap, HashSet};
 
@@ -47,11 +48,12 @@ pub fn get_lines_of_sym(points: &HashSet<Point>, high_degree_expected: Option<bo
         }
     }
 
+    // Points sorted by x, for finding reflections within the tolerance.
+    let mut points_by_x = points_vec.clone();
+    points_by_x.sort_by(|a, b| a.x.total_cmp(&b.x));
+
     // A reusable map to track reflections of points across the candidate lines.
     let mut point_reflections: HashMap<&Point, &Point> = HashMap::new();
-
-    // A flag to indicate whether a line that goes through all points is possible.
-    let mut through_line_possible = true;
 
     while let Some(e_pair) = e_line_generators.iter().next().cloned() {
         // Generate candidate line
@@ -78,9 +80,8 @@ pub fn get_lines_of_sym(points: &HashSet<Point>, high_degree_expected: Option<bo
                     }
                 } else {
                     // Reflection is a separate point.
-                    if points.contains(&reflection) {
+                    if let Some(reflection_in_input) = find_point(&points_by_x, &reflection) {
                         // Reflection is in the input set.
-                        let reflection_in_input = points.get(&reflection).unwrap();
                         point_reflections.insert(point, reflection_in_input);
                         point_reflections.insert(reflection_in_input, point);
 
@@ -110,10 +111,6 @@ pub fn get_lines_of_sym(points: &HashSet<Point>, high_degree_expected: Option<bo
         }
 
         if valid_line {
-            if through_line_possible {
-                through_line_possible = false;
-            }
-
             if !lines_set.contains(&e_line) {
                 lines_set.insert(e_line);
             }
@@ -122,8 +119,9 @@ pub fn get_lines_of_sym(points: &HashSet<Point>, high_degree_expected: Option<bo
         point_reflections.clear();
     }
 
-    /* Only possible missing line of symmetry: a line that goes through all the points. */
-    if through_line_possible && points_vec.len() >= 2 {
+    /* A line through all the points is always a line of symmetry, but it is never
+       a perpendicular bisector of two of them, so check for it separately. */
+    if points_vec.len() >= 2 {
         let p1 = points_vec[0];
         let p2 = points_vec[1];
         let through_line = get_through_line(p1, p2);
@@ -144,11 +142,24 @@ pub fn get_lines_of_sym(points: &HashSet<Point>, high_degree_expected: Option<bo
     lines_set
 }
 
+/// Returns the point equal to `target` within the tolerance, if there is one.
+/// A hash lookup can't do this, because `Point` hashes the exact bits.
+fn find_point<'a>(points_by_x: &[&'a Point], target: &Point) -> Option<&'a Point> {
+    let start = points_by_x.partition_point(|p| p.x < target.x - config::EPSILON);
+    points_by_x[start..]
+        .iter()
+        .take_while(|p| p.x <= target.x + config::EPSILON)
+        .find(|p| ***p == *target)
+        .copied()
+}
+
 pub fn get_equidistant_line(p1: &Point, p2: &Point) -> Line {
     // Returns a line that is equidistant from p1 and p2
     let a = p2.x - p1.x;
     let b = p2.y - p1.y;
-    let c = 0.5 * (p1.x.powf(2.0) + p1.y.powf(2.0) - p2.x.powf(2.0) - p2.y.powf(2.0));
+    // The line passes through the midpoint. Computing c from it avoids subtracting
+    // large squares, which loses precision for points far from the origin.
+    let c = -(a * 0.5 * (p1.x + p2.x) + b * 0.5 * (p1.y + p2.y));
 
     Line::new(a, b, c)
 }
